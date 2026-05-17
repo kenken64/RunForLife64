@@ -531,6 +531,72 @@ static void draw_player_model(surface_t *surface, const RflGame *game, float x, 
     draw_static_model(surface, &rfl_player_model, &placement);
 }
 
+static void draw_player_humanoid(
+    surface_t *surface,
+    const RflGame *game,
+    float x,
+    float y,
+    float z,
+    bool sliding,
+    bool squatting,
+    bool invisible
+)
+{
+    uint32_t body = invisible ? col(80, 215, 235) : col(220, 94, 72);
+    uint32_t body_side = invisible ? col(30, 116, 150) : col(119, 48, 50);
+    uint32_t highlight = invisible ? col(170, 247, 255) : col(255, 174, 103);
+    uint32_t skin = invisible ? col(132, 231, 246) : col(231, 174, 124);
+    uint32_t dark = invisible ? col(17, 69, 91) : col(33, 28, 34);
+    uint32_t boot = invisible ? col(21, 86, 111) : col(28, 34, 46);
+    float stride = ((game->frames_alive / 7) & 1) ? 4.0f : -4.0f;
+
+    draw_box3d(surface, x, y + 0.4f, z + 5.0f, 48.0f, 1.2f, 34.0f,
+        col(5, 8, 13), col(5, 8, 13), col(5, 8, 13), 0);
+
+    if (sliding) {
+        draw_box3d(surface, x + 4.0f, y + 8.0f, z, 48.0f, 15.0f, 38.0f,
+            body, body_side, highlight, dark);
+        draw_box3d(surface, x - 28.0f, y + 13.0f, z + 1.0f, 14.0f, 12.0f, 14.0f,
+            skin, body_side, highlight, dark);
+        draw_box3d(surface, x + 27.0f, y + 5.0f, z + 2.0f, 18.0f, 8.0f, 12.0f,
+            boot, dark, body_side, 0);
+        draw_box3d(surface, x - 4.0f, y + 3.0f, z - 12.0f, 36.0f, 6.0f, 8.0f,
+            body_side, dark, body, 0);
+        return;
+    }
+
+    if (squatting) {
+        draw_box3d(surface, x - 11.0f, y + 1.0f, z + stride, 9.0f, 14.0f, 9.0f,
+            boot, dark, body_side, 0);
+        draw_box3d(surface, x + 11.0f, y + 1.0f, z - stride, 9.0f, 14.0f, 9.0f,
+            boot, dark, body_side, 0);
+        draw_box3d(surface, x, y + 13.0f, z, 27.0f, 22.0f, 17.0f,
+            body, body_side, highlight, dark);
+        draw_box3d(surface, x - 22.0f, y + 15.0f, z + 2.0f, 7.0f, 15.0f, 7.0f,
+            skin, body_side, highlight, 0);
+        draw_box3d(surface, x + 22.0f, y + 15.0f, z - 2.0f, 7.0f, 15.0f, 7.0f,
+            skin, body_side, highlight, 0);
+        draw_box3d(surface, x, y + 35.0f, z + 1.0f, 16.0f, 13.0f, 14.0f,
+            skin, body_side, highlight, dark);
+        return;
+    }
+
+    draw_box3d(surface, x - 9.0f, y + 1.0f, z + stride, 8.0f, 21.0f, 9.0f,
+        boot, dark, body_side, 0);
+    draw_box3d(surface, x + 9.0f, y + 1.0f, z - stride, 8.0f, 21.0f, 9.0f,
+        boot, dark, body_side, 0);
+    draw_box3d(surface, x, y + 20.0f, z, 24.0f, 24.0f, 17.0f,
+        body, body_side, highlight, dark);
+    draw_box3d(surface, x - 20.0f, y + 22.0f, z - stride, 7.0f, 20.0f, 7.0f,
+        skin, body_side, highlight, 0);
+    draw_box3d(surface, x + 20.0f, y + 22.0f, z + stride, 7.0f, 20.0f, 7.0f,
+        skin, body_side, highlight, 0);
+    draw_box3d(surface, x, y + 44.0f, z + 1.0f, 16.0f, 14.0f, 14.0f,
+        skin, body_side, highlight, dark);
+    draw_box3d(surface, x, y + 55.0f, z - 1.0f, 18.0f, 5.0f, 15.0f,
+        dark, dark, body_side, 0);
+}
+
 static void draw_coin(surface_t *surface, float x, float y, float z)
 {
     float r = 8.0f;
@@ -669,6 +735,7 @@ static void draw_player(surface_t *surface, const RflGame *game)
     if (!rfl_tiny_scene_ready()) {
         draw_player_model(surface, game, x, y, z, player_w, player_h);
     }
+    draw_player_humanoid(surface, game, x, y, z, sliding, squatting, invisible);
 }
 
 static void draw_hud(surface_t *surface, const RflGame *game)

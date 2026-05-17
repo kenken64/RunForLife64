@@ -5,7 +5,7 @@ An original Nintendo 64 homebrew endless runner. It uses the lane-dodge rhythm o
 ## Current Scope
 
 - Three-lane runner
-- RDPQ hardware-rasterized 3D road, city, player, obstacles, buses, and coins
+- RDPQ hardware-rasterized 3D road, Project64-safe player, obstacles, buses, and coins
 - On-screen FPS counter
 - D-pad or analog lane switching
 - Jump over barriers with A/C-Up/Up
@@ -15,7 +15,7 @@ An original Nintendo 64 homebrew endless runner. It uses the lane-dodge rhythm o
 - Jump onto bus obstacles to collect elevated coin trails
 - Random jetpack and invisibility powerups
 - Randomized GLB-derived side-city building meshes
-- GLB-derived Back to the Future player mesh
+- Project64-safe box-modeled runner silhouette with jump, slide, squat, and powerup poses
 - Coins, distance score, level progression, controlled speed ramp, title screen, and game-over restart
 
 ## Build
@@ -36,6 +36,26 @@ runforlife64.z64
 The build pads the ROM to 1 MiB and marks it as NTSC-U for better Project64
 compatibility.
 
+## Project64 Debugging
+
+If the ROM opens to a blank screen, build the debug ROM:
+
+```powershell
+.\.tools\msys64\usr\bin\bash.exe -lc "cd /d/Projects/RunForLife64 && make debug-rom"
+```
+
+That creates:
+
+```text
+runforlife64-debug.z64
+```
+
+The debug ROM uses libdragon's development IPL3 and disables ELF compression, so
+boot failures are easier to distinguish from game-rendering failures. If the
+debug ROM also shows nothing in Project64, test it in another N64 emulator such
+as ares or gopher64 to separate a Project64 compatibility issue from a ROM/game
+bug.
+
 ## GLB Models
 
 Put source `.glb` model files in:
@@ -47,7 +67,7 @@ assets/models/
 The build converts:
 
 - `assets/models/building*.glb` into side-city building meshes
-- `assets/models/backtofuture.glb` into the player mesh
+- `assets/models/backtofuture.glb` into an optional fallback player mesh
 
 After changing the GLB files, regenerate the mesh C data:
 

@@ -6,11 +6,10 @@
 #include <t3d/t3dmodel.h>
 
 #define TINY_FB_COUNT 3
-#define TINY_MAX_DRAWS (RFL_TINY_MAX_BUILDINGS + 1)
+#define TINY_MAX_DRAWS RFL_TINY_MAX_BUILDINGS
 
 static T3DViewport g_viewport;
 static T3DMat4FP *g_matrices;
-static T3DModel *g_player_model;
 static T3DModel *g_building_model;
 static int g_frame_index;
 static bool g_ready;
@@ -64,9 +63,8 @@ void rfl_tiny_scene_init(void)
     g_viewport = t3d_viewport_create_buffered(TINY_FB_COUNT);
     g_matrices = malloc_uncached(sizeof(T3DMat4FP) * TINY_FB_COUNT * TINY_MAX_DRAWS);
 
-    g_player_model = t3d_model_load("rom:/meshes/characters/scrapper_kid.t3dm");
     g_building_model = t3d_model_load("rom:/models/building2.t3dm");
-    g_ready = g_matrices && g_player_model && g_building_model;
+    g_ready = g_matrices && g_building_model;
 }
 
 bool rfl_tiny_scene_ready(void)
@@ -76,6 +74,8 @@ bool rfl_tiny_scene_ready(void)
 
 void rfl_tiny_scene_render(const RflGame *game, const RflTinyBuilding *buildings, int building_count)
 {
+    (void)game;
+
     if (!g_ready) {
         return;
     }
@@ -120,26 +120,4 @@ void rfl_tiny_scene_render(const RflGame *game, const RflTinyBuilding *buildings
         t3d_matrix_pop(1);
         draw_index++;
     }
-
-    float lane_x = ((float)game->player.lane - 1.0f) * 54.0f;
-    float y = (float)rfl_player_jump_height(game);
-    float desired_h = rfl_player_is_sliding(game) ? 28.0f : (rfl_player_is_squatting(game) ? 36.0f : 46.0f);
-    float player_scale = desired_h / model_span_y(g_player_model);
-    float yaw = 0.20f + (((game->frames_alive / 8) & 1) ? 0.08f : -0.08f);
-    make_grounded_matrix(&matrices[draw_index], g_player_model,
-        lane_x, y, -10.0f,
-        player_scale, player_scale, player_scale,
-        yaw);
-
-    if (rfl_player_is_invisible(game)) {
-        rdpq_set_prim_color(RGBA32(80, 215, 235, 190));
-    } else if (game->player.stumble_frames > 0) {
-        rdpq_set_prim_color(RGBA32(255, 90, 80, 255));
-    } else {
-        rdpq_set_prim_color(RGBA32(222, 118, 72, 255));
-    }
-
-    t3d_matrix_push(&matrices[draw_index]);
-    t3d_model_draw(g_player_model);
-    t3d_matrix_pop(1);
 }

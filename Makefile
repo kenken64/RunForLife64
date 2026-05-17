@@ -23,6 +23,7 @@ T3D_RUNTIME_ASSETS = filesystem/meshes/characters/scrapper_kid.t3dm filesystem/m
 
 N64_INST ?= $(CURDIR)/.tools/libdragon-install
 N64_GCCPREFIX ?= $(CURDIR)/.tools/n64-toolchain
+DEBUG_IPL3 ?= $(CURDIR)/.tools/libdragon/boot/bin/ipl3_dev.z64
 PROJECT64_ROM_REGION = E
 PROJECT64_ROM_PAYLOAD_SIZE = 1020K
 
@@ -46,6 +47,10 @@ N64_CFLAGS += -Wno-error=ignored-qualifiers -Wno-error=type-limits -Wno-error=un
 
 all: $(PROG_NAME).z64
 .PHONY: all
+
+debug-rom:
+	$(MAKE) PROG_NAME=$(PROG_NAME)-debug N64_ROM_HEADER=$(DEBUG_IPL3) N64_ROM_ELFCOMPRESS=0 $(PROG_NAME)-debug.z64
+.PHONY: debug-rom
 
 models: $(GENERATED_MODEL_SOURCE)
 .PHONY: models
