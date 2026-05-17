@@ -1,0 +1,7 @@
+.tools/
+build/
+*.elf
+*.sym
+*.stripped
+__pycache__/
+*.pyc
