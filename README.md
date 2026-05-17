@@ -5,7 +5,7 @@ An original Nintendo 64 homebrew endless runner. It uses the lane-dodge rhythm o
 ## Current Scope
 
 - Three-lane runner
-- RDPQ hardware-rasterized 3D road, Project64-safe player, obstacles, buses, and coins
+- RDPQ hardware-rasterized curving 3D road, Project64-safe player, obstacles, buses, and coins
 - On-screen FPS counter
 - D-pad or analog lane switching
 - Start pauses and resumes a run

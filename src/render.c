@@ -25,6 +25,9 @@
 #define FAST_PROJECTED_3D 1
 #define STATIC_MODEL_SCALE 1024.0f
 #define CITY_MESH_LOD_Z 250.0f
+#define ROAD_CURVE_PERIOD 960
+#define ROAD_CURVE_HALF_PERIOD (ROAD_CURVE_PERIOD / 2)
+#define ROAD_CURVE_STRENGTH 118.0f
 
 typedef enum {
     RENDER_MODE_NONE,
@@ -36,6 +39,7 @@ static RenderMode g_render_mode = RENDER_MODE_NONE;
 static uint32_t g_render_color = 0;
 static RflTinyBuilding g_tiny_buildings[RFL_TINY_MAX_BUILDINGS];
 static int g_tiny_building_count = 0;
+static int g_road_curve_scroll = 0;
 
 static int clampi(int value, int min_value, int max_value);
 void rdpq_triangle_cpu(const rdpq_trifmt_t *fmt, const float *v1, const float *v2, const float *v3);
@@ -143,6 +147,41 @@ static float lane_world_x(int lane)
     return ((float)lane - 1.0f) * LANE_SPACING;
 }
 
+static float smooth_step01(float t)
+{
+    return t * t * (3.0f - 2.0f * t);
+}
+
+static float road_curve_offset(float z)
+{
+    if (z <= 0.0f) {
+        return 0.0f;
+    }
+
+    int phase = ((int)z + g_road_curve_scroll) % ROAD_CURVE_PERIOD;
+    if (phase < 0) {
+        phase += ROAD_CURVE_PERIOD;
+    }
+
+    float local;
+    float wave;
+    if (phase < ROAD_CURVE_HALF_PERIOD) {
+        local = (float)phase / (float)ROAD_CURVE_HALF_PERIOD;
+        wave = -1.0f + smooth_step01(local) * 2.0f;
+    } else {
+        local = (float)(phase - ROAD_CURVE_HALF_PERIOD) / (float)ROAD_CURVE_HALF_PERIOD;
+        wave = 1.0f - smooth_step01(local) * 2.0f;
+    }
+
+    float depth_weight = z / ((float)RFL_SPAWN_Z + 160.0f);
+    if (depth_weight > 1.0f) {
+        depth_weight = 1.0f;
+    }
+    depth_weight *= depth_weight;
+
+    return wave * ROAD_CURVE_STRENGTH * depth_weight;
+}
+
 static Proj project_point(Vec3 p)
 {
     Proj out;
@@ -157,7 +196,8 @@ static Proj project_point(Vec3 p)
 
     float ground_y = (float)HORIZON_Y +
         ((float)(PLAYER_Y - HORIZON_Y) * CAMERA_DEPTH) / out.depth;
-    out.x = SCREEN_W / 2 + (int)((p.x * FOCAL_X) / out.depth);
+    float curved_x = p.x + road_curve_offset(p.z);
+    out.x = SCREEN_W / 2 + (int)((curved_x * FOCAL_X) / out.depth);
     out.y = (int)(ground_y - (p.y * FOCAL_Y) / out.depth);
     return out;
 }
@@ -808,6 +848,7 @@ void rfl_render(surface_t *surface, surface_t *zbuffer, const RflGame *game)
     g_render_mode = RENDER_MODE_NONE;
     g_render_color = 0;
     g_tiny_building_count = 0;
+    g_road_curve_scroll = game->score % ROAD_CURVE_PERIOD;
 
     rdpq_attach(surface, zbuffer);
     draw_background(surface, game);
