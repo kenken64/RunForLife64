@@ -29,6 +29,7 @@
 #define COIN_HIGH_MIN 24
 #define COIN_HIGH_VARIANCE 22
 #define GATE_NEAR_Z 20
+#define GATE_CLEAR_Z 4
 #define BUS_CLEAR_HEIGHT 28
 #define BUS_TOP_HEIGHT 34
 #define BUS_RIDE_FRAMES 16
@@ -453,6 +454,11 @@ static void rfl_update_running(RflGame *game, const RflInput *input)
             if (game->score > game->best_score) {
                 game->best_score = game->score;
             }
+            continue;
+        }
+
+        if (entity->kind == RFL_ENTITY_GATE && entity->z <= GATE_CLEAR_Z) {
+            entity->active = false;
             continue;
         }
 

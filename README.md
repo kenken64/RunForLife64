@@ -36,6 +36,10 @@ runforlife64.z64
 The build pads the ROM to 1 MiB and marks it as NTSC-U for better Project64
 compatibility.
 
+The Project64 build path avoids Tiny3D runtime rendering because Project64 can
+hang in the `rsp_tiny3d` RSP overlay. City meshes and the runner are rendered
+through the simpler projected RDPQ path instead.
+
 ## Project64 Debugging
 
 If the ROM opens to a blank screen, build the debug ROM:
