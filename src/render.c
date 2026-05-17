@@ -474,6 +474,13 @@ static void draw_road_segment(surface_t *surface, float near_z, float far_z, uin
     }
 }
 
+static void draw_road_edge_segment(surface_t *surface, float x, float near_z, float far_z, uint32_t color)
+{
+    Vec3 near = { x, 1.0f, near_z };
+    Vec3 far = { x, 1.0f, far_z };
+    draw_projected_line(surface, project_point(near), project_point(far), color);
+}
+
 static void draw_road(surface_t *surface, const RflGame *game)
 {
     draw_screen_rect(0, PLAYER_Y + 30, SCREEN_W, SCREEN_H, col(12, 17, 25));
@@ -492,12 +499,10 @@ static void draw_road(surface_t *surface, const RflGame *game)
         draw_projected_line(surface, pa, pb, col(112, 76, 49));
     }
 
-    Vec3 edge_l0 = { -ROAD_HALF_W, 1.0f, -80.0f };
-    Vec3 edge_l1 = { -ROAD_HALF_W, 1.0f, (float)RFL_SPAWN_Z + 150.0f };
-    Vec3 edge_r0 = { ROAD_HALF_W, 1.0f, -80.0f };
-    Vec3 edge_r1 = { ROAD_HALF_W, 1.0f, (float)RFL_SPAWN_Z + 150.0f };
-    draw_projected_line(surface, project_point(edge_l0), project_point(edge_l1), col(236, 86, 130));
-    draw_projected_line(surface, project_point(edge_r0), project_point(edge_r1), col(53, 237, 202));
+    for (int z = RFL_SPAWN_Z + 140; z > -90; z -= 72) {
+        draw_road_edge_segment(surface, -ROAD_HALF_W, (float)(z - 72), (float)z, col(236, 86, 130));
+        draw_road_edge_segment(surface, ROAD_HALF_W, (float)(z - 72), (float)z, col(53, 237, 202));
+    }
 }
 
 static void draw_side_city(surface_t *surface, const RflGame *game)
