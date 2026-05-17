@@ -512,7 +512,16 @@ void rfl_game_update(RflGame *game, const RflInput *input)
         }
         break;
     case RFL_MODE_RUNNING:
-        rfl_update_running(game, input);
+        if (input->start) {
+            game->mode = RFL_MODE_PAUSED;
+        } else {
+            rfl_update_running(game, input);
+        }
+        break;
+    case RFL_MODE_PAUSED:
+        if (input->start) {
+            game->mode = RFL_MODE_RUNNING;
+        }
         break;
     case RFL_MODE_GAME_OVER:
         if (input->start || input->jump) {

@@ -24,7 +24,7 @@
 #define ROAD_SIDE_W 52.0f
 #define FAST_PROJECTED_3D 1
 #define STATIC_MODEL_SCALE 1024.0f
-#define CITY_MESH_LOD_Z 430.0f
+#define CITY_MESH_LOD_Z 250.0f
 
 typedef enum {
     RENDER_MODE_NONE,
@@ -514,23 +514,6 @@ static void draw_side_city(surface_t *surface, const RflGame *game)
     }
 }
 
-static void draw_player_model(surface_t *surface, const RflGame *game, float x, float y, float z, float w, float h)
-{
-    float run_sway = ((game->frames_alive / 8) & 1) ? 0.10f : -0.10f;
-    ModelPlacement placement = {
-        .x = x,
-        .y = y,
-        .z = z,
-        .w = w,
-        .h = h,
-        .d = rfl_player_is_sliding(game) ? 58.0f : 42.0f,
-        .cos_yaw = 0.829f,
-        .sin_yaw = 0.559f + run_sway,
-        .mirror_x = false,
-    };
-    draw_static_model(surface, &rfl_player_model, &placement);
-}
-
 static void draw_player_humanoid(
     surface_t *surface,
     const RflGame *game,
@@ -549,8 +532,12 @@ static void draw_player_humanoid(
     uint32_t dark = invisible ? col(17, 69, 91) : col(33, 28, 34);
     uint32_t boot = invisible ? col(21, 86, 111) : col(28, 34, 46);
     float stride = ((game->frames_alive / 7) & 1) ? 4.0f : -4.0f;
+    float shadow_scale = 1.0f - y * 0.0065f;
+    if (shadow_scale < 0.42f) {
+        shadow_scale = 0.42f;
+    }
 
-    draw_box3d(surface, x, y + 0.4f, z + 5.0f, 48.0f, 1.2f, 34.0f,
+    draw_box3d(surface, x, 0.4f, z + 5.0f, 48.0f * shadow_scale, 1.2f, 34.0f * shadow_scale,
         col(5, 8, 13), col(5, 8, 13), col(5, 8, 13), 0);
 
     if (sliding) {
@@ -732,9 +719,6 @@ static void draw_player(surface_t *surface, const RflGame *game)
             col(255, 122, 52), col(150, 61, 24), col(255, 221, 79), 0);
     }
 
-    if (!rfl_tiny_scene_ready()) {
-        draw_player_model(surface, game, x, y, z, player_w, player_h);
-    }
     draw_player_humanoid(surface, game, x, y, z, sliding, squatting, invisible);
 }
 
@@ -810,6 +794,15 @@ static void draw_game_over(surface_t *surface, const RflGame *game)
     draw_centered_text(surface, 150, "A / START TO RETRY");
 }
 
+static void draw_pause(surface_t *surface)
+{
+    graphics_draw_box_trans(surface, 46, 79, 228, 63, rgba(0, 0, 0, 190));
+    graphics_set_color(col(255, 221, 79), rgba(0, 0, 0, 0));
+    draw_centered_text(surface, 96, "PAUSED");
+    graphics_set_color(col(237, 245, 255), rgba(0, 0, 0, 0));
+    draw_centered_text(surface, 119, "START TO RESUME");
+}
+
 void rfl_render(surface_t *surface, surface_t *zbuffer, const RflGame *game)
 {
     g_render_mode = RENDER_MODE_NONE;
@@ -829,6 +822,8 @@ void rfl_render(surface_t *surface, surface_t *zbuffer, const RflGame *game)
 
     if (game->mode == RFL_MODE_TITLE) {
         draw_title(surface);
+    } else if (game->mode == RFL_MODE_PAUSED) {
+        draw_pause(surface);
     } else if (game->mode == RFL_MODE_GAME_OVER) {
         draw_game_over(surface, game);
     }

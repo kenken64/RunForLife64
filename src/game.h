@@ -12,6 +12,7 @@
 typedef enum {
     RFL_MODE_TITLE,
     RFL_MODE_RUNNING,
+    RFL_MODE_PAUSED,
     RFL_MODE_GAME_OVER
 } RflMode;
 
