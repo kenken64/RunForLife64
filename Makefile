@@ -23,6 +23,8 @@ T3D_RUNTIME_ASSETS = filesystem/meshes/characters/scrapper_kid.t3dm filesystem/m
 
 N64_INST ?= $(CURDIR)/.tools/libdragon-install
 N64_GCCPREFIX ?= $(CURDIR)/.tools/n64-toolchain
+PROJECT64_ROM_REGION = E
+PROJECT64_ROM_PAYLOAD_SIZE = 1020K
 
 ifeq ($(wildcard $(N64_INST)/include/n64.mk),)
 $(error libdragon SDK not found at $(N64_INST). Install libdragon or set N64_INST)
@@ -34,6 +36,10 @@ export N64_GCCPREFIX
 
 include $(N64_INST)/include/n64.mk
 include $(N64_INST)/include/t3d.mk
+
+# Project64 is stricter than libdragon/flashcarts about small homebrew ROMs.
+# n64tool's --size excludes the 4 KiB IPL3 header, so 1020 KiB makes a 1 MiB ROM.
+N64_TOOLFLAGS += --region $(PROJECT64_ROM_REGION) --size $(PROJECT64_ROM_PAYLOAD_SIZE)
 
 CFLAGS += -std=gnu11 -Wall -Wextra -I$(SOURCE_DIR) -falign-functions=32
 N64_CFLAGS += -Wno-error=ignored-qualifiers -Wno-error=type-limits -Wno-error=unused-parameter

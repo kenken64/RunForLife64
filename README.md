@@ -33,6 +33,9 @@ Expected output:
 runforlife64.z64
 ```
 
+The build pads the ROM to 1 MiB and marks it as NTSC-U for better Project64
+compatibility.
+
 ## GLB Models
 
 Put source `.glb` model files in:
